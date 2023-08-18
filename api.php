@@ -2,10 +2,11 @@
 
 $apiUrl = "https://randomuser.me/api/";
 $ch = curl_init($apiUrl); //Esto te permite hacer las opciones de exect o setopt o close
-// Configurar opciones de cURL
+// Configurar opciones de cURL`
+
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-// $response = curl_exec($ch); 
+$response = curl_exec($ch); 
 
 if (curl_errno($ch)) {
     echo 'Error en la solicitud cURL: ' . curl_error($ch);

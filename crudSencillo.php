@@ -15,15 +15,24 @@ if ($conn->connect_error) {
 
 // Operación CREATE (Crear)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["create"])) {
-    $name = $_POST["name"];
+    $nombre = $_POST["nombre"];
     $email = $_POST["email"];
 
-    $sql = "INSERT INTO user (name, email) VALUES ('$name', '$email')";
+    // Manejo de la carga de archivos
+    $archivoNombre = $_FILES["archivo"]["name"];
+    $archivoTemp = $_FILES["archivo"]["tmp_name"];
+    $carpetaDestino = "uploads/"; // Asegúrate de tener una carpeta llamada "uploads" en el mismo directorio
 
-    if ($conn->query($sql) === TRUE) {
-        echo "Registro creado exitosamente.";
+    // Mueve el archivo cargado a la carpeta de destino
+    if (move_uploaded_file($archivoTemp, $carpetaDestino . $archivoNombre)) {
+        $sql = "INSERT INTO user (name, email, file) VALUES ('$nombre', '$email', '$archivoNombre')";
+        if ($conn->query($sql) === TRUE) {
+            echo "Registro creado exitosamente.";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Error al cargar el archivo.";
     }
 }
 
@@ -33,7 +42,7 @@ $resultado = $conn->query($sql);
 
 if ($resultado->num_rows > 0) {
     while ($fila = $resultado->fetch_assoc()) {
-        echo "ID: " . $fila["id"] . " - name: " . $fila["name"] . " - Email: " . $fila["email"] . "<br>";
+        echo "ID: " . $fila["id"] . " - name: " . $fila["name"] . " - Email: " . $fila["email"] . "file: ". $fila['file'] ."<br>";
     }
 } else {
     echo "No se encontraron registros.";
@@ -42,7 +51,6 @@ if ($resultado->num_rows > 0) {
 // Cerrar conexión
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -50,11 +58,13 @@ $conn->close();
 </head>
 <body>
     <h2>Crear Usuario</h2>
-    <form method="POST" action="crudSencillo.php">
-        <label>name:</label>
-        <input type="text" name="name" required><br>
+    <form method="POST" action="" enctype="multipart/form-data">
+        <label>Nombre:</label>
+        <input type="text" name="nombre" required><br>
         <label>Email:</label>
         <input type="email" name="email" required><br>
+        <label>Archivo:</label>
+        <input type="file" name="archivo"><br>
         <button type="submit" name="create">Crear</button>
     </form>
 </body>
